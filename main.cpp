@@ -1,3 +1,11 @@
+/*******************************
+ * Programmers: Carl Brown     *
+ *              Ben Paepke     *
+ * Assignment:  Mandelbrot Set * 
+ *              Group Project  *
+ * Class:       CISP 400       *
+ *******************************/
+
 #include "ComplexPlane.h"
 #include <SFML/Graphics.hpp>
 
@@ -29,8 +37,8 @@ int main()
 	//Construct a VertexArray
 	VertexArray background;
 	//Set primitive type to Points
-	background.setPrimitiveType(Points);
-	//Resize the screen to height * width
+	background.setPrimitiveType(Points);	
+    //Resize the screen to height * width
 	background.resize(desktopHeight * desktopWidth);
 
 	//Create an enum class state variable
@@ -38,10 +46,14 @@ int main()
 	//Initialize to CALCULATING
 	State state = CALCULATING;
 
-	//Begin loop
+    /*************
+	* Begin loop *
+    **************/
 	while (window.isOpen())
 	{
-		//Handle player's input
+        /*************************
+		 * Handle player's input *
+         *************************/ 
 
 		//Create queue events
 		Event event;
@@ -91,7 +103,9 @@ int main()
 			{ window.close(); }
 		}
 
-		//Update scene
+        /***************
+		* Update scene *
+        ****************/
 		if (state == CALCULATING)
 		{
 			//Make double for loop for all pixels
@@ -121,7 +135,9 @@ int main()
 			state = DISPLAYING;
 		}
 
-		//Draw scene
+        /**************
+		 * Draw scene *
+         **************/ 
 
 		//Call loadText
 		complexPlane.loadText(text);
