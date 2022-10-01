@@ -7,7 +7,36 @@
  *******************************/
 
 #include "ComplexPlane.h"
-#include <SFML/Graphics.hpp>
+#include <thread>
+
+using namespace std;
+
+void calculateIteration(float desktopWidth, float desktopHeight, VertexArray& background, RenderWindow& window, ComplexPlane& complexPlane, int index, int num)
+{
+	//Make double for loop for all pixels
+	for(int j = index; j < num; j++)
+	{
+		for(int i = 0; i < static_cast<int>(desktopHeight); i++)
+		{
+			background[j + i * static_cast<int>(desktopWidth)].position = {(float)j, (float)i};
+			Vector2i points(j, i);
+			Vector2f coord = window.mapPixelToCoords(points, complexPlane.getView());
+
+			//Call countIterations and store return value
+			size_t count = complexPlane.countIterations(coord);
+
+			//Declare 3 local variables r, g, b
+			Uint8 r, g, b;
+
+			//Pass count and 3 color variables to iterationsToRGB
+			complexPlane.iterationsToRGB(count, r, g, b);
+
+			//Set color variable in VertexArray
+			background[j + i * static_cast<int>(desktopWidth)].color = {r, g, b};
+		}
+	}
+}
+
 
 int main()
 {
@@ -108,27 +137,20 @@ int main()
         ****************/
 		if (state == CALCULATING)
 		{
-			//Make double for loop for all pixels
-			for(int j = 0; j < static_cast<int>(desktopWidth); j++)
+			//Multithreading
+			const int NUM_OF_THREADS = 16;
+			
+			//Calculates the number of pixels for each thread to access
+			int step = static_cast<int>(desktopWidth) / NUM_OF_THREADS;
+			thread t[NUM_OF_THREADS];
+
+			for(int i = 0; i < NUM_OF_THREADS; i++)
 			{
-				for(int i = 0; i < static_cast<int>(desktopHeight); i++)
-				{
-					background[j + i * static_cast<int>(desktopWidth)].position = {(float)j, (float)i};
-					Vector2i points(j, i);
-					Vector2f coord = window.mapPixelToCoords(points, complexPlane.getView());
-
-					//Call countIterations and store return value
-					size_t count = complexPlane.countIterations(coord);
-
-					//Declare 3 local variables r, g, b
-					Uint8 r, g, b;
-
-					//Pass count and 3 color variables to iterationsToRGB
-					complexPlane.iterationsToRGB(count, r, g, b);
-
-					//Set color variable in VertexArray
-					background[j + i * static_cast<int>(desktopWidth)].color = {r, g, b};
-				}
+				t[i] = thread(calculateIteration, desktopWidth, desktopHeight, ref(background), ref(window), ref(complexPlane), step * i, step * (i + 1));
+			}			
+			for(int i = 0; i < NUM_OF_THREADS; i++)
+			{
+				t[i].join();
 			}
 			
 			//Set state to DISPLAYING
